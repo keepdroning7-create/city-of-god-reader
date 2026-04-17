@@ -28,7 +28,7 @@ class BookSection {
       );
 }
 
-enum EbookId { city }
+enum EbookId { city, imitation }
 
 class Ebook {
   final EbookId id;
@@ -73,6 +73,42 @@ class Bookmark {
         book: (j['book'] as num).toInt(),
         chapter: (j['chapter'] as num).toInt(),
         label: j['label']?.toString() ?? '',
+        createdAt: (j['createdAt'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class GlossaryEntry {
+  final String word;
+  final String translation;
+  final String? ipa;
+  final String? note;
+  final int createdAt;
+
+  GlossaryEntry({
+    required this.word,
+    required this.translation,
+    this.ipa,
+    this.note,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'word': word,
+        'translation': translation,
+        'ipa': ipa,
+        'note': note,
+        'createdAt': createdAt,
+      };
+
+  factory GlossaryEntry.fromJson(Map<String, dynamic> j) => GlossaryEntry(
+        word: j['word']?.toString() ?? '',
+        translation: j['translation']?.toString() ?? '',
+        ipa: (j['ipa'] as String?)?.trim().isEmpty == true
+            ? null
+            : j['ipa']?.toString(),
+        note: (j['note'] as String?)?.trim().isEmpty == true
+            ? null
+            : j['note']?.toString(),
         createdAt: (j['createdAt'] as num?)?.toInt() ?? 0,
       );
 }

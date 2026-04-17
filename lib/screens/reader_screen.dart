@@ -114,6 +114,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
               height: 1.6,
               color: textColor,
             ),
+            onTranslated: (word, r) => s.upsertGlossary(
+              word: word,
+              translation: r.translation,
+              ipa: r.ipa,
+              note: r.note,
+            ),
           ),
           const SizedBox(height: 20),
         ],

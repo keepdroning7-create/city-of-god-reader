@@ -9,6 +9,7 @@ class StorageService {
   static const _fontScaleKey = 'app_font_scale';
   static const _darkKey = 'app_dark';
   static const _geminiKey = 'app_gemini_key';
+  static const _glossaryKey = 'app_glossary_v1';
 
   final SharedPreferences _prefs;
   StorageService(this._prefs);
@@ -86,6 +87,26 @@ class StorageService {
 
   bool loadDark() => _prefs.getBool(_darkKey) ?? false;
   Future<void> saveDark(bool v) => _prefs.setBool(_darkKey, v);
+
+  // Glossary
+  List<GlossaryEntry> loadGlossary() {
+    final raw = _prefs.getString(_glossaryKey);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final list = jsonDecode(raw) as List;
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(GlossaryEntry.fromJson)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveGlossary(List<GlossaryEntry> items) async {
+    await _prefs.setString(
+        _glossaryKey, jsonEncode(items.map((g) => g.toJson()).toList()));
+  }
 
   String? loadGeminiKey() {
     final v = _prefs.getString(_geminiKey);

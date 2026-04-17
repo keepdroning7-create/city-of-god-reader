@@ -5,6 +5,7 @@ import 'screens/reader_screen.dart';
 import 'screens/quote_screen.dart';
 import 'screens/bookmarks_screen.dart';
 import 'screens/journal_screen.dart';
+import 'screens/glossary_screen.dart';
 import 'screens/toc_screen.dart';
 
 Future<void> main() async {
@@ -86,6 +87,9 @@ class Home extends StatelessWidget {
         case 3:
           body = JournalScreen(state: state);
           break;
+        case 4:
+          body = GlossaryScreen(state: state);
+          break;
         default:
           body = ReaderScreen(state: state);
       }
@@ -151,7 +155,7 @@ class Home extends StatelessWidget {
       ),
       endDrawer: _drawer(context),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: state.navIndex.clamp(0, 3),
+        selectedIndex: state.navIndex.clamp(0, 4),
         onDestinationSelected: state.setNav,
         indicatorColor: accent.withOpacity(0.1),
         backgroundColor:
@@ -179,6 +183,14 @@ class Home extends StatelessWidget {
             selectedIcon:
                 _badged(const Icon(Icons.edit_note, color: accent), state.journal.length),
             label: 'Journal',
+          ),
+          NavigationDestination(
+            icon: _badged(
+                const Icon(Icons.translate), state.glossary.length),
+            selectedIcon: _badged(
+                const Icon(Icons.translate, color: accent),
+                state.glossary.length),
+            label: 'Glossary',
           ),
         ],
       ),
@@ -268,6 +280,30 @@ class Home extends StatelessWidget {
                   state.setNav(3);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.translate, color: Color(0xFF888888)),
+                title: Text('Glossary (${state.glossary.length})'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  state.setNav(4);
+                },
+              ),
+              const Divider(color: Color(0xFFD1CFC9)),
+              const Padding(
+                padding: EdgeInsets.only(left: 8, top: 4, bottom: 6),
+                child: Text(
+                  'LIBRARY',
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 2,
+                    color: Color(0xFF888888),
+                  ),
+                ),
+              ),
+              _ebookTile(context, EbookId.city),
+              const SizedBox(height: 6),
+              _ebookTile(context, EbookId.imitation),
+              const SizedBox(height: 8),
               const Divider(color: Color(0xFFD1CFC9)),
               const Padding(
                 padding: EdgeInsets.only(left: 8, top: 4, bottom: 6),
@@ -335,6 +371,70 @@ class Home extends StatelessWidget {
                             fontSize: 10,
                             letterSpacing: 2,
                             color: Color(0xFF888888))),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ebookTile(BuildContext context, EbookId id) {
+    const accent = Color(0xFF7C2D12);
+    final eb = state.ebooks[id];
+    if (eb == null) return const SizedBox.shrink();
+    final active = state.activeEbook == id;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () async {
+          await state.switchEbook(id);
+          if (context.mounted) Navigator.of(context).pop();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(
+                color: active ? accent : const Color(0xFFD1CFC9),
+                width: active ? 1.5 : 1),
+            borderRadius: BorderRadius.circular(10),
+            color: active
+                ? accent.withOpacity(0.06)
+                : Colors.transparent,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                active ? Icons.check_circle : Icons.menu_book_outlined,
+                size: 18,
+                color: active ? accent : const Color(0xFF888888),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      eb.title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontFamily: 'Georgia',
+                        fontWeight: FontWeight.w600,
+                        color: active ? accent : const Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      eb.author,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 1,
+                        color: Color(0xFF888888),
+                      ),
+                    ),
                   ],
                 ),
               ),
