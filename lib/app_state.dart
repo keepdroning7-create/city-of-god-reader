@@ -16,12 +16,13 @@ class AppState extends ChangeNotifier {
 
   List<Bookmark> bookmarks = [];
   List<JournalEntry> journal = [];
+  List<GlossaryEntry> glossary = [];
 
   double fontScale = 1.0;
   bool dark = false;
   String? geminiKey;
 
-  int navIndex = 0; // 0 read, 1 quote, 2 bookmarks, 3 journal
+  int navIndex = 0; // 0 read, 1 quote, 2 bookmarks, 3 journal, 4 glossary
   bool showToc = false;
 
   Ebook get current => ebooks[activeEbook]!;
@@ -53,6 +54,7 @@ class AppState extends ChangeNotifier {
     // drop legacy entries pointing at removed ebooks (if any)
     bookmarks = storage.loadBookmarks().where((b) => ebooks.containsKey(b.ebook)).toList();
     journal = storage.loadJournal().where((j) => ebooks.containsKey(j.ebook)).toList();
+    glossary = storage.loadGlossary();
     fontScale = storage.loadFontScale();
     dark = storage.loadDark();
     geminiKey = storage.loadGeminiKey();
@@ -177,6 +179,45 @@ class AppState extends ChangeNotifier {
   Future<void> removeJournal(String id) async {
     journal.removeWhere((e) => e.id == id);
     await storage.saveJournal(journal);
+    notifyListeners();
+  }
+
+  Future<void> upsertGlossary({
+    required String word,
+    required String translation,
+    String? ipa,
+    String? note,
+  }) async {
+    final key = word.trim().toLowerCase();
+    if (key.isEmpty || translation.trim().isEmpty) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final existingIdx =
+        glossary.indexWhere((g) => g.word.toLowerCase() == key);
+    final entry = GlossaryEntry(
+      word: word.trim(),
+      translation: translation.trim(),
+      ipa: (ipa == null || ipa.trim().isEmpty) ? null : ipa.trim(),
+      note: (note == null || note.trim().isEmpty) ? null : note.trim(),
+      createdAt: now,
+    );
+    if (existingIdx >= 0) {
+      glossary.removeAt(existingIdx);
+    }
+    glossary.insert(0, entry);
+    await storage.saveGlossary(glossary);
+    notifyListeners();
+  }
+
+  Future<void> removeGlossary(String word) async {
+    final key = word.toLowerCase();
+    glossary.removeWhere((g) => g.word.toLowerCase() == key);
+    await storage.saveGlossary(glossary);
+    notifyListeners();
+  }
+
+  Future<void> clearGlossary() async {
+    glossary.clear();
+    await storage.saveGlossary(glossary);
     notifyListeners();
   }
 

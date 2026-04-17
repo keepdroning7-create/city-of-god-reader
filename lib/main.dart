@@ -5,6 +5,7 @@ import 'screens/reader_screen.dart';
 import 'screens/quote_screen.dart';
 import 'screens/bookmarks_screen.dart';
 import 'screens/journal_screen.dart';
+import 'screens/glossary_screen.dart';
 import 'screens/toc_screen.dart';
 
 Future<void> main() async {
@@ -86,6 +87,9 @@ class Home extends StatelessWidget {
         case 3:
           body = JournalScreen(state: state);
           break;
+        case 4:
+          body = GlossaryScreen(state: state);
+          break;
         default:
           body = ReaderScreen(state: state);
       }
@@ -151,7 +155,7 @@ class Home extends StatelessWidget {
       ),
       endDrawer: _drawer(context),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: state.navIndex.clamp(0, 3),
+        selectedIndex: state.navIndex.clamp(0, 4),
         onDestinationSelected: state.setNav,
         indicatorColor: accent.withOpacity(0.1),
         backgroundColor:
@@ -179,6 +183,14 @@ class Home extends StatelessWidget {
             selectedIcon:
                 _badged(const Icon(Icons.edit_note, color: accent), state.journal.length),
             label: 'Journal',
+          ),
+          NavigationDestination(
+            icon: _badged(
+                const Icon(Icons.translate), state.glossary.length),
+            selectedIcon: _badged(
+                const Icon(Icons.translate, color: accent),
+                state.glossary.length),
+            label: 'Glossary',
           ),
         ],
       ),

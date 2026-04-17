@@ -8,7 +8,13 @@ import '../services/translate_service.dart';
 class TranslatableText extends StatefulWidget {
   final String text;
   final TextStyle? style;
-  const TranslatableText({super.key, required this.text, this.style});
+  final void Function(String word, TranslationResult result)? onTranslated;
+  const TranslatableText({
+    super.key,
+    required this.text,
+    this.style,
+    this.onTranslated,
+  });
 
   @override
   State<TranslatableText> createState() => _TranslatableTextState();
@@ -65,7 +71,11 @@ class _TranslatableTextState extends State<TranslatableText> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => _TranslationSheet(word: clean, context: widget.text),
+      builder: (_) => _TranslationSheet(
+        word: clean,
+        context: widget.text,
+        onTranslated: widget.onTranslated,
+      ),
     );
   }
 }
@@ -73,7 +83,12 @@ class _TranslatableTextState extends State<TranslatableText> {
 class _TranslationSheet extends StatefulWidget {
   final String word;
   final String context;
-  const _TranslationSheet({required this.word, required this.context});
+  final void Function(String word, TranslationResult result)? onTranslated;
+  const _TranslationSheet({
+    required this.word,
+    required this.context,
+    this.onTranslated,
+  });
 
   @override
   State<_TranslationSheet> createState() => _TranslationSheetState();
@@ -101,6 +116,7 @@ class _TranslationSheetState extends State<_TranslationSheet> {
         _result = r;
         _loading = false;
       });
+      widget.onTranslated?.call(widget.word, r);
     } catch (e) {
       if (!mounted) return;
       setState(() {
