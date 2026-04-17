@@ -28,7 +28,7 @@ class BookSection {
       );
 }
 
-enum EbookId { city }
+enum EbookId { city, imitation }
 
 class Ebook {
   final EbookId id;

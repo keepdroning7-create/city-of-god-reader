@@ -36,6 +36,12 @@ class AppState extends ChangeNotifier {
         .map(BookSection.fromJson)
         .toList();
 
+    final imitationRaw = await rootBundle.loadString('assets/imitation.json');
+    final imitationSections = (jsonDecode(imitationRaw) as List)
+        .whereType<Map<String, dynamic>>()
+        .map(BookSection.fromJson)
+        .toList();
+
     ebooks = {
       EbookId.city: Ebook(
         id: EbookId.city,
@@ -43,9 +49,16 @@ class AppState extends ChangeNotifier {
         author: 'Saint Augustine',
         sections: citySections,
       ),
+      EbookId.imitation: Ebook(
+        id: EbookId.imitation,
+        title: 'The Imitation of Christ',
+        author: 'Thomas à Kempis',
+        sections: imitationSections,
+      ),
     };
 
-    activeEbook = EbookId.city;
+    activeEbook = storage.loadActiveEbook();
+    if (!ebooks.containsKey(activeEbook)) activeEbook = EbookId.city;
     final pos = storage.loadPosition(activeEbook);
     currentBook = pos.book;
     currentChapter = pos.chapter;
@@ -87,6 +100,20 @@ class AppState extends ChangeNotifier {
     currentChapter = c;
     _clampPosition();
     await storage.savePosition(id, currentBook, currentChapter);
+    navIndex = 0;
+    showToc = false;
+    notifyListeners();
+  }
+
+  /// Switch the active ebook, restoring the last-read position for it.
+  Future<void> switchEbook(EbookId id) async {
+    if (!ebooks.containsKey(id) || id == activeEbook) return;
+    activeEbook = id;
+    await storage.saveActiveEbook(id);
+    final pos = storage.loadPosition(id);
+    currentBook = pos.book;
+    currentChapter = pos.chapter;
+    _clampPosition();
     navIndex = 0;
     showToc = false;
     notifyListeners();
